@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import io
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+import uvicorn
 
 app = FastAPI()
 
@@ -248,6 +249,4 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Exemplo de inicialização do servidor FastAPI
 if __name__ == "__main__":
-    import uvicorn
-
     uvicorn.run("main:app", host="0.0.0.0", port=4000, reload=True, root_path="/p/ezgraph")
