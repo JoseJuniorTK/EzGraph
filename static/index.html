@@ -303,13 +303,11 @@
             directed: directed
         };
         document.cookie = `graphData=${JSON.stringify(graphData)};path=/`;
-        alert('Grafo salvo nos cookies!');
         renderGraph(graphData);
     }
 
     window.clearGraph = function clearGraph() {
         document.cookie = 'graphData=;path=/;expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-        alert('Grafo removido dos cookies!');
         document.getElementById('edgeList').innerHTML = '';
         document.getElementById('nodeList').innerHTML = '';
         document.getElementById('directed').checked = false;
