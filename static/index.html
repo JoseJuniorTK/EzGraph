@@ -202,10 +202,10 @@
         <p class="text-sm">Feito por <b>José Maria Junior Lopes Perdigão</b> para o trabalho final da disciplina <b>Grafos</b> ministrada por <b>Nelson Cruz Sampaio Neto</b> em <b>2024</b></p>
     </footer>
 
-    <script type="importmap">{ "imports": { "three": "/jsm/three.module.js" } }</script>
-<script type="importmap">{ "imports": { "three": "/jsm/three.module.js" } }</script>
+    <script type="importmap">{ "imports": { "three": "/p/ezgraph/jsm/three.module.js" } }</script>
+<script type="importmap">{ "imports": { "three": "/p/ezgraph/jsm/three.module.js" } }</script>
 <script type="module">
-    import { CSS2DRenderer, CSS2DObject } from '/jsm/CSS2DRenderer.js';
+    import { CSS2DRenderer, CSS2DObject } from '/p/ezgraph/jsm/CSS2DRenderer.js';
     import { UnrealBloomPass } from 'https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
     window.addEdge = function addEdge(u = '', v = '', w = '') {
@@ -396,7 +396,7 @@
 
             // Inclui os parâmetros do queryParams na URL e os dados do grafo no corpo da requisição
             const urlParams = new URLSearchParams(queryParams).toString();
-            const url = `http://localhost:8000/grafo/${endpoint}?${urlParams}`;
+            const url = `http://localhost:8000/p/ezgraph/grafo/${endpoint}?${urlParams}`;
 
             fetch(url, {
                 method: 'POST',
@@ -430,7 +430,7 @@
                 conjunto: conjunto
             };
 
-            fetch(`http://localhost:8000/grafo/${endpoint}`, {
+            fetch(`http://localhost:8000/p/ezgraph/grafo/${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
