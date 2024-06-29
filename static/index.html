@@ -394,7 +394,7 @@
 
             // Inclui os parâmetros do queryParams na URL e os dados do grafo no corpo da requisição
             const urlParams = new URLSearchParams(queryParams).toString();
-            const url = `http://localhost:4000/p/ezgraph/grafo/${endpoint}?${urlParams}`;
+            const url = `https://katudv.com/p/ezgraph/grafo/${endpoint}?${urlParams}`;
 
             fetch(url, {
                 method: 'POST',
@@ -428,7 +428,7 @@
                 conjunto: conjunto
             };
 
-            fetch(`http://localhost:4000/p/ezgraph/grafo/${endpoint}`, {
+            fetch(`https://katudv.com/p/ezgraph/grafo/${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
