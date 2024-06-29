@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipulação de Grafos</title>
+    <script src="//unpkg.com/3d-force-graph"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@1.18.11/dist/tsparticles.min.js"></script>
+    <style>
+        body { margin: 0; }
+        .node-label {
+            font-size: 12px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            background-color: rgba(0,0,0,0.5);
+            user-select: none;
+        }
+        .sticky {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+        }
+        .bg-obsidian {
+            background-color: #0B1215;
+        }
+        .bt-confirm {
+            background-color: #dd0525;
+        }
+        .bt-reject {
+            background-color: #777777;
+        }
+        .bg-lava-black {
+            background-color: #313638;
+        }
+        canvas {
+            display: block;
+            vertical-align: bottom;
+        }
+        #tsparticles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-obsidian text-gray-300">
+    <!-- tsParticles container -->
+    <div id="tsparticles"></div>
+    <header class="w-full p-4 bg-lava-black text-white text-center">
+        <h1 class="text-3xl font-bold">Ez Graph v0.1</h1>
+    </header>
+    <div class="p-4 flex flex-col flex-grow">
+        <div class="flex flex-row justify-around mb-4">
+            <div class="flex flex-col items-center">
+                <h2 class="text-xl font-semibold my-2">Arestas</h2>
+                <div id="edgeList" class="mb-2"></div>
+                <button type="button" onclick="window.addEdge()" class="bg-orange-500 text-white px-4 py-2 rounded-md mb-2">Adicionar Aresta</button>
+            </div>
+            <div class="flex flex-col items-center justify-center">
+                <label class="my-2">
+                    <input type="checkbox" id="directed" class="mr-2"> Grafo Direcionado
+                </label>
+                <div class="flex flex-col gap-4 mt-2">
+                    <button type="button" onclick="window.saveGraph()" class="bg-orange-500 text-white px-4 py-2 rounded-md">Gerar meu grafo</button>
+                    <button type="button" onclick="window.clearGraph()" class="bt-reject text-white px-4 py-2 rounded-md">Apagar meu grafo</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <h2 class="text-xl font-semibold my-2">Nós Isolados</h2>
+                <div id="nodeList" class="mb-2"></div>
+                <button type="button" onclick="window.addNode()" class="bg-orange-500 text-white px-4 py-2 rounded-md mb-2">Adicionar Nó Isolado</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-1">
+        <div id="graphContainer" class="w-2/3 h-full rounded-md shadow-md sticky"></div>
+        <div id="verifications" class="w-1/4 h-full p-4 bg-lava-black rounded-md shadow-md overflow-auto">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Verificações</h2>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Verificar Existência de Aresta</h3>
+                <div class="flex flex-col items-center">
+                    <input type="number" id="u" placeholder="u" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <input type="number" id="v" placeholder="v" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraph('verificar_existencia_aresta', {u: parseInt(document.getElementById('u').value), v: parseInt(document.getElementById('v').value)}, 'existenciaArestaResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="existenciaArestaResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Grau do Vértice</h3>
+                <div class="flex flex-col items-center">
+                    <input type="number" id="vertex" placeholder="vértice" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraph('grau_vertice', {v: parseInt(document.getElementById('vertex').value)}, 'grauVerticeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="grauVerticeResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Adjacência do Vértice</h3>
+                <div class="flex flex-col items-center">
+                    <input type="number" id="adj_vertex" placeholder="vértice" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraph('adjacencia_vertice', {v: parseInt(document.getElementById('adj_vertex').value)}, 'adjacenciaVerticeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="adjacenciaVerticeResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Verificar Ciclicidade</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('verificar_grafo_ciclico', {}, 'ciclicidadeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="ciclicidadeResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Componentes Fortemente Conexos</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('componentes_fortemente_conexos', {}, 'fortementeConexosResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="fortementeConexosResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Ordenação Topológica</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('ordenacao_topologica', {}, 'ordenacaoTopologicaResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="ordenacaoTopologicaResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Verificar Euleriano</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('verificar_euleriano', {}, 'eulerianoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="eulerianoResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Conjunto Independente</h3>
+                <div class="flex flex-col items-center">
+                    <input type="text" id="indep_set" placeholder="conjunto (separado por vírgula)" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraphWithConjunto('verificar_conjunto_independente', document.getElementById('indep_set').value.split(',').map(Number), 'independenteResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="independenteResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Clique</h3>
+                <div class="flex flex-col items-center">
+                    <input type="text" id="clique_set" placeholder="conjunto (separado por vírgula)" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraphWithConjunto('verificar_clique', document.getElementById('clique_set').value.split(',').map(Number), 'cliqueResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="cliqueResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Conjunto Dominante</h3>
+                <div class="flex flex-col items-center">
+                    <input type="text" id="dom_set" placeholder="conjunto (separado por vírgula)" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraphWithConjunto('verificar_conjunto_dominante', document.getElementById('dom_set').value.split(',').map(Number), 'dominanteResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="dominanteResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Verificar Planaridade</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('verificar_planaridade', {}, 'planaridadeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="planaridadeResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Caminho Mais Curto</h3>
+                <div class="flex flex-col items-center">
+                    <input type="number" id="source" placeholder="source" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <input type="number" id="target" placeholder="target" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraph('caminho_mais_curto', {source: parseInt(document.getElementById('source').value), target: parseInt(document.getElementById('target').value)}, 'caminhoCurtoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="caminhoCurtoResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Verificar Arestas do Nó</h3>
+                <div class="flex flex-col items-center">
+                    <input type="number" id="no" placeholder="nó" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <button type="button" onclick="window.verifyGraph('verificar_arestas_do_no', {no: parseInt(document.getElementById('no').value)}, 'arestasNoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="arestasNoResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Árvore Geradora Mínima</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('arvore_geradora_minima', {}, 'arvoreGeradoraMinimaResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="arvoreGeradoraMinimaResult" class="text-center"></div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold my-2 text-center">Algoritmo Húngaro</h3>
+                <div class="flex flex-col items-center">
+                    <button type="button" onclick="window.verifyGraph('algoritmo_hungaro', {}, 'algoritmoHungaroResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                </div>
+                <div id="algoritmoHungaroResult" class="text-center"></div>
+            </div>
+            <div id="results" class="flex flex-col items-center justify-center text-center"></div>
+        </div>
+    </div>
+    <footer class="w-full p-4 bg-lava-black text-white flex items-center justify-center">
+        <img src="https://ascom.ufpa.br/images/Brasao/brasao-UFPA-branco.png" alt="Brasão UFPA" class="h-12 mr-4">
+        <p class="text-sm">Feito por <b>José Maria Junior Lopes Perdigão</b> para o trabalho final da disciplina <b>Grafos</b> ministrada por <b>Nelson Cruz Sampaio Neto</b> em <b>2024</b></p>
+    </footer>
+
+    <script type="importmap">{ "imports": { "three": "/jsm/three.module.js" } }</script>
+<script type="importmap">{ "imports": { "three": "/jsm/three.module.js" } }</script>
+<script type="module">
+    import { CSS2DRenderer, CSS2DObject } from '/jsm/CSS2DRenderer.js';
+    import { UnrealBloomPass } from 'https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+    window.addEdge = function addEdge(u = '', v = '', w = '') {
+        const edgeList = document.getElementById('edgeList');
+        const newEdge = document.createElement('div');
+        newEdge.classList.add('edge', 'flex', 'items-center', 'mb-2');
+        newEdge.innerHTML = `
+            <input type="number" class="vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="u" value="${u}" required min="0"> -
+            <input type="number" class="vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="v" value="${v}" required min="0">
+            <input type="number" class="weight border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="peso" value="${w}" min="0">
+            <button type="button" onclick="removeEdge(this)" class="bg-orange-500 text-white px-2 py-1 rounded-md ml-2">-</button>
+        `;
+        edgeList.appendChild(newEdge);
+    }
+
+    window.addNode = function addNode(node = '') {
+        const nodeList = document.getElementById('nodeList');
+        const newNode = document.createElement('div');
+        newNode.classList.add('node', 'flex', 'items-center', 'mb-2');
+        newNode.innerHTML = `
+            <input type="number" class="node-vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="nó" value="${node}" required min="0">
+            <button type="button" onclick="removeNode(this)" class="bg-orange-500 text-white px-2 py-1 rounded-md ml-2">-</button>
+        `;
+        nodeList.appendChild(newNode);
+    }
+
+    window.removeEdge = function removeEdge(button) {
+        button.parentElement.remove();
+    }
+
+    window.removeNode = function removeNode(button) {
+        button.parentElement.remove();
+    }
+
+    window.validateGraphData = function validateGraphData() {
+        let isValid = true;
+        document.querySelectorAll('.edge').forEach(edge => {
+            const vertices = edge.querySelectorAll('.vertex');
+            const u = vertices[0].value;
+            const v = vertices[1].value;
+            if (u === '' || v === '' || isNaN(u) || isNaN(v) || u < 0 || v < 0) {
+                isValid = false;
+            }
+        });
+        document.querySelectorAll('.node-vertex').forEach(node => {
+            const n = node.value;
+            if (n === '' || isNaN(n) || n < 0) {
+                isValid = false;
+            }
+        });
+        return isValid;
+    }
+
+    window.checkDuplicateNodes = function checkDuplicateNodes(edges, nodes) {
+        const edgeNodes = new Set();
+        edges.forEach(edge => {
+            edgeNodes.add(edge[0]);
+            edgeNodes.add(edge[1]);
+        });
+        return nodes.some(node => edgeNodes.has(node));
+    }
+
+    window.saveGraph = function saveGraph() {
+        if (!validateGraphData()) {
+            alert('Por favor, insira valores válidos para todas as arestas e nós.');
+            return;
+        }
+        const edges = [];
+        document.querySelectorAll('.edge').forEach(edge => {
+            const vertices = edge.querySelectorAll('.vertex');
+            const weight = edge.querySelector('.weight').value;
+            const u = parseInt(vertices[0].value);
+            const v = parseInt(vertices[1].value);
+            if (!isNaN(u) && !isNaN(v)) {
+                edges.push([u, v, weight ? parseFloat(weight) : 1]);
+            }
+        });
+        const nodes = [];
+        document.querySelectorAll('.node-vertex').forEach(node => {
+            const n = parseInt(node.value);
+            if (!isNaN(n)) {
+                nodes.push(n);
+            }
+        });
+
+        if (checkDuplicateNodes(edges, nodes)) {
+            alert('Erro: Nós isolados não podem ser os mesmos que os nós definidos nas arestas.');
+            return;
+        }
+
+        const directed = document.getElementById('directed').checked;
+        const graphData = {
+            edges: edges,
+            nodes: nodes,
+            directed: directed
+        };
+        document.cookie = `graphData=${JSON.stringify(graphData)};path=/`;
+        alert('Grafo salvo nos cookies!');
+        renderGraph(graphData);
+    }
+
+    window.clearGraph = function clearGraph() {
+        document.cookie = 'graphData=;path=/;expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        alert('Grafo removido dos cookies!');
+        document.getElementById('edgeList').innerHTML = '';
+        document.getElementById('nodeList').innerHTML = '';
+        document.getElementById('directed').checked = false;
+        document.getElementById('verifications').style.display = 'none';
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('graphContainer').innerHTML = '';
+    }
+
+    window.loadGraph = function loadGraph() {
+        const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
+        if (graphDataCookie) {
+            const graphData = JSON.parse(graphDataCookie.split('=')[1]);
+            graphData.edges.forEach(edge => {
+                addEdge(edge[0], edge[1], edge[2]);
+            });
+            graphData.nodes.forEach(node => {
+                addNode(node);
+            });
+            document.getElementById('directed').checked = graphData.directed;
+            renderGraph(graphData);
+        } else {
+            addEdge();  // Adiciona um campo vazio inicial se não houver cookies
+            addNode();  // Adiciona um campo vazio inicial se não houver cookies
+        }
+    }
+
+    window.renderGraph = function renderGraph(graphData) {
+        const nodeIds = new Set(graphData.nodes);
+        graphData.edges.forEach(edge => {
+            nodeIds.add(edge[0]);
+            nodeIds.add(edge[1]);
+        });
+
+        const gData = {
+            nodes: Array.from(nodeIds).map(id => ({ id, name: `Node ${id}` })),
+            links: graphData.edges.map(edge => ({
+                source: edge[0],
+                target: edge[1],
+                value: graphData.directed ? 1 : null // Adiciona valor para diferenciar arestas direcionadas
+            }))
+        };
+
+        const graphContainer = document.getElementById('graphContainer');
+
+        const Graph = ForceGraph3D({
+            extraRenderers: [new CSS2DRenderer()]
+        })(graphContainer)
+            .graphData(gData)
+            .backgroundColor('rgba(11, 18, 21, 0.0)')
+            .height(graphContainer.clientHeight)
+            .width(graphContainer.clientWidth)
+            .nodeLabel(node => node.id)
+            .nodeAutoColorBy('name')
+            .nodeColor(node => "#f97316")
+            .linkDirectionalArrowLength(graphData.directed ? 3.5 : 0)
+            .linkDirectionalArrowRelPos(graphData.directed ? 1 : 0)
+            .linkCurvature(graphData.directed ? 0.25 : 0)
+            .nodeThreeObject(node => {
+                const nodeEl = document.createElement('div');
+                nodeEl.textContent = node.id;
+                nodeEl.style.color = node.color;
+                return new CSS2DObject(nodeEl);
+            })
+            .nodeThreeObjectExtend(true);
+
+        const bloomPass = new UnrealBloomPass();
+        bloomPass.strength = 4;
+        bloomPass.radius = 1;
+        bloomPass.threshold = 0;
+        Graph.postProcessingComposer().addPass(bloomPass);
+
+        document.getElementById('verifications').style.display = 'block';
+
+        window.addEventListener('resize', () => {
+            Graph.width(graphContainer.clientWidth)
+                .height(graphContainer.clientHeight);
+        });
+    }
+
+    window.verifyGraph = function verifyGraph(endpoint, queryParams, resultElementId) {
+        const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
+        if (graphDataCookie) {
+            const graphData = JSON.parse(graphDataCookie.split('=')[1]);
+
+            // Inclui os parâmetros do queryParams na URL e os dados do grafo no corpo da requisição
+            const urlParams = new URLSearchParams(queryParams).toString();
+            const url = `http://localhost:8000/grafo/${endpoint}?${urlParams}`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(graphData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultElement = document.getElementById(resultElementId);
+                resultElement.innerHTML = `<p class="text-center">${JSON.stringify(data)}</p>`;
+            })
+            .catch(error => {
+                const resultElement = document.getElementById(resultElementId);
+                resultElement.innerHTML = `<p class="text-center">Erro: ${error}</p>`;
+                console.error(`Erro ao verificar ${endpoint}:`, error);
+            });
+        } else {
+            alert('Nenhum grafo encontrado nos cookies. Por favor, salve um grafo primeiro.');
+        }
+    }
+
+    window.verifyGraphWithConjunto = function verifyGraphWithConjunto(endpoint, conjunto, resultElementId) {
+        const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
+        if (graphDataCookie) {
+            const graphData = JSON.parse(graphDataCookie.split('=')[1]);
+
+            const bodyData = {
+                data: graphData,
+                conjunto: conjunto
+            };
+
+            fetch(`http://localhost:8000/grafo/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bodyData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultElement = document.getElementById(resultElementId);
+                resultElement.innerHTML = `<p class="text-center">${JSON.stringify(data)}</p>`;
+            })
+            .catch(error => {
+                const resultElement = document.getElementById(resultElementId);
+                resultElement.innerHTML = `<p class="text-center">Erro: ${error}</p>`;
+                console.error(`Erro ao verificar ${endpoint}:`, error);
+            });
+        } else {
+            alert('Nenhum grafo encontrado nos cookies. Por favor, salve um grafo primeiro.');
+        }
+    }
+
+    // Carrega os dados do grafo dos cookies ao carregar a página
+    window.onload = loadGraph;
+
+    // Inicializa tsParticles
+    tsParticles.load("tsparticles", {
+        fpsLimit: 60,
+        particles: {
+            number: {
+                value: 0,
+                density: {
+                    enable: true,
+                    value_area: 800
+                }
+            },
+            color: {
+                value: "#ed8936",
+                animation: {
+                    enable: true,
+                    speed: -70,
+                    sync: true
+                }
+            },
+            shape: {
+                type: "circle"
+            },
+            opacity: {
+                value: 0.3,
+                random: false,
+                animation: {
+                    enable: true,
+                    speed: 0.5,
+                    minimumValue: 0,
+                    sync: false
+                }
+            },
+            size: {
+                value: 8,
+                random: { enable: true, minimumValue: 4 },
+                animation: {
+                    enable: false,
+                    speed: 20,
+                    minimumValue: 4,
+                    sync: false
+                }
+            },
+            life: {
+                duration: {
+                    value: 4.2
+                },
+                count: 1
+            },
+            move: {
+                angle: {
+                    value: 45,
+                    offset: 0
+                },
+                enable: true,
+                gravity: {
+                    enable: true,
+                    acceleration: -0.5
+                },
+                speed: 2,
+                direction: "top",
+                random: false,
+                straight: false,
+                size: true,
+                outModes: {
+                    default: "destroy",
+                    bottom: "none"
+                },
+                attract: {
+                    enable: false,
+                    distance: 300,
+                    rotate: {
+                        x: 600,
+                        y: 1200
+                    }
+                }
+            }
+        },
+        interactivity: {
+            detectsOn: "canvas",
+            events: {
+                resize: true
+            }
+        },
+        detectRetina: true,
+        background: {
+            color: "#000000"
+        },
+        emitters: {
+            direction: "top",
+            rate: {
+                quantity: 1,
+                delay: 0.01
+            },
+            size: {
+                width: 100,
+                height: 10
+            },
+            position: {
+                x: 50,
+                y: 100
+            }
+        }
+    });
+
+    // Ajustar o tamanho do gráfico ao redimensionar a janela
+    window.addEventListener('resize', () => {
+        const graphContainer = document.getElementById('graphContainer');
+        Graph.width(graphContainer.clientWidth)
+            .height(graphContainer.clientHeight);
+    });
+</script>
+
+</body>
+</html>
