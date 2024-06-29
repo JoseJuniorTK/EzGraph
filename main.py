@@ -250,4 +250,4 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("api.api:app", host="0.0.0.0", port=4009, reload=True, root_path="/p/ezgraph/")
+    uvicorn.run("api.api:app", host="0.0.0.0", port=4000, reload=True, root_path="/p/ezgraph/")
