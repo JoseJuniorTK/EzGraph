@@ -6,18 +6,22 @@ import matplotlib.pyplot as plt
 import io
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+import numpy as np
+from scipy.optimize import linear_sum_assignment
 import uvicorn
 
 app = FastAPI()
 
 class EdgeList(BaseModel):
-    edges: List[Tuple[int, int, Optional[float]]]  # Adicionando peso opcional às arestas
-    nodes: List[int] = []  # Lista de nós isolados
+    edges: List[Tuple[str, str, Optional[float]]]  # Adicionando peso opcional às arestas
+    nodes: List[str] = []  # Lista de nós isolados
     directed: bool = True  # Opção para grafo orientado ou não
 
+class GraphInput(BaseModel):
+    graph: dict
 
 class Node(BaseModel):
-    node: int
+    node: str
     directed: bool = True
 
 
@@ -48,6 +52,34 @@ def desenhar_grafo(G):
     buf.seek(0)
     plt.close()
     return buf
+    
+
+def hungarian_algorithm(json_input):
+    # Extrai coluna e linha
+    rows = list(json_input.keys())
+    columns = list(json_input[rows[0]].keys())
+
+    cost_matrix = np.array([[json_input[row][col] for col in columns] for row in rows])
+
+    # Se a matriz nao for quadrada, adicione 0's onde for necessário
+    num_rows, num_cols = cost_matrix.shape
+    if num_rows < num_cols:
+        # Adiciona 0 extras
+        padded_cost_matrix = np.zeros((num_cols, num_cols))
+        padded_cost_matrix[:num_rows, :] = cost_matrix
+    else:
+        padded_cost_matrix = cost_matrix
+
+    # Aplica o algoritmo
+    row_ind, col_ind = linear_sum_assignment(padded_cost_matrix)
+
+    # Extrai os resultados
+    result = []
+    for i, j in zip(row_ind, col_ind):
+        if i < num_rows:  # Somente vai incluir os resultados de vertices existentes
+            result.append(((rows[i], columns[j]), json_input[rows[i]][columns[j]]))
+
+    return result
 
 
 @app.post("/grafo/imagem", summary="Desenha e retorna o grafo como uma imagem", response_description="Imagem do grafo")
@@ -98,7 +130,7 @@ async def algoritmo_hungaro(data: EdgeList):
 
 @app.post("/grafo/verificar_existencia_aresta", summary="Verifica a existência de uma aresta",
           response_description="Existência da aresta")
-async def verificar_existencia_aresta(data: EdgeList, u: int, v: int):
+async def verificar_existencia_aresta(data: EdgeList, u: str, v: str):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
@@ -107,7 +139,7 @@ async def verificar_existencia_aresta(data: EdgeList, u: int, v: int):
 
 
 @app.post("/grafo/grau_vertice", summary="Retorna o grau de um vértice", response_description="Grau do vértice")
-async def grau_vertice(data: EdgeList, v: int):
+async def grau_vertice(data: EdgeList, v: str):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
@@ -117,7 +149,7 @@ async def grau_vertice(data: EdgeList, v: int):
 
 @app.post("/grafo/adjacencia_vertice", summary="Retorna a adjacência de um vértice",
           response_description="Lista de adjacências")
-async def adjacencia_vertice(data: EdgeList, v: int):
+async def adjacencia_vertice(data: EdgeList, v: str):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
@@ -135,22 +167,31 @@ async def verificar_grafo_ciclico(data: EdgeList):
     return f"O grafo {'é' if ciclico else 'não é'} cíclico."
 
 
-@app.post("/grafo/componentes_fortemente_conexos", summary="Retorna os componentes fortemente conexos",
-          response_description="Componentes fortemente conexos")
+@app.post("/grafo/componentes_fortemente_conexos", summary="Retorna os componentes fortemente conexos e a quantidade",
+          response_description="Componentes fortemente conexos e a quantidade")
 async def componentes_fortemente_conexos(data: EdgeList):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
+    
     if isinstance(G, nx.DiGraph):
+        # Obtém os componentes fortemente conectados
         componentes = [list(c) for c in nx.strongly_connected_components(G)]
-        return f"Os componentes fortemente conectados são: {componentes}."
+        # Conta o número de componentes fortemente conectados
+        numero_componentes = len(componentes)
+        
+        return {
+            f"O grafo possui {numero_componentes} componente(s) fortemente conectado(s), sendo eles os seguintes: {componentes}"
+        }
     else:
         return "O grafo não possui elementos fortemente conectados."
+
 
 
 @app.post("/grafo/ordenacao_topologica", summary="Retorna a ordenação topológica",
           response_description="Ordenação topológica")
 async def ordenacao_topologica(data: EdgeList):
+    print(data)
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
@@ -174,7 +215,7 @@ async def verificar_euleriano(data: EdgeList):
 
 @app.post("/grafo/verificar_conjunto_independente", summary="Verifica se um conjunto de vértices é independente",
           response_description="Se o conjunto é independente")
-async def verificar_conjunto_independente(data: EdgeList, conjunto: List[int]):
+async def verificar_conjunto_independente(data: EdgeList, conjunto: List[str]):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
@@ -185,7 +226,7 @@ async def verificar_conjunto_independente(data: EdgeList, conjunto: List[int]):
 
 @app.post("/grafo/verificar_clique", summary="Verifica se um conjunto de vértices é um clique",
           response_description="Se o conjunto é um clique")
-async def verificar_clique(data: EdgeList, conjunto: List[int]):
+async def verificar_clique(data: EdgeList, conjunto: List[str]):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
@@ -197,15 +238,27 @@ async def verificar_clique(data: EdgeList, conjunto: List[int]):
 
 @app.post("/grafo/verificar_conjunto_dominante", summary="Verifica se um conjunto de vértices é dominante",
           response_description="Se o conjunto é dominante")
-async def verificar_conjunto_dominante(data: EdgeList, conjunto: List[int]):
-    G = cria_grafo(orientado=data.directed)
+async def verificar_conjunto_dominante(data: EdgeList, conjunto: List[str]):
+    # Verifica se o grafo é orientado, pois a verificação de conjunto dominante é apenas para grafos não orientados
+    if data.directed:
+        return "A verificação de conjunto dominante atualmente só é aplicável a grafos não orientados."
+
+    G = cria_grafo(orientado=False)  # Certifique-se de criar o grafo como não orientado
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
+    
+    # Conjunto de vértices dominados pelo conjunto fornecido
     dominados = set(conjunto)
+    
+    # Adiciona os vizinhos de cada vértice no conjunto
     for v in conjunto:
         dominados.update(G.neighbors(v))
+    
+    # Verifica se todos os vértices do grafo foram dominados
     dominante = len(dominados) == len(G)
+    
     return f"O conjunto {conjunto} {'é' if dominante else 'não é'} dominante."
+
 
 
 @app.post("/grafo/verificar_planaridade", summary="Verifica se o grafo é planar",
@@ -220,12 +273,13 @@ async def verificar_planaridade(data: EdgeList):
 
 @app.post("/grafo/caminho_mais_curto", summary="Encontra o caminho mais curto entre dois vértices",
           response_description="Caminho mais curto")
-async def caminho_mais_curto(data: EdgeList, source: int, target: int):
+async def caminho_mais_curto(data: EdgeList, source: str, target: str):
+    print(data)
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
     try:
-        caminho = nx.shortest_path(G, source, target, weight='weight' if any('weight' in d for _, _, d in G.edges(data=True)) else None)
+        caminho = nx.shortest_path(G, source, target, method='bellman-ford', weight='weight' if any('weight' in d for _, _, d in G.edges(data=True)) else None)
         return f"O caminho mais curto entre {source} e {target} é: {caminho}."
     except nx.NetworkXNoPath:
         return f"Não existe caminho entre {source} e {target}."
@@ -233,12 +287,35 @@ async def caminho_mais_curto(data: EdgeList, source: int, target: int):
 
 @app.post("/grafo/verificar_arestas_do_no", summary="Verifica se um nó tem arestas e lista as arestas",
           response_description="Arestas conectadas ao nó")
-async def verificar_arestas_do_no(data: EdgeList, no: int):
+async def verificar_arestas_do_no(data: EdgeList, no: str):
     G = cria_grafo(orientado=data.directed)
     adicionar_arestas(G, data.edges)
     adicionar_nos(G, data.nodes)
     arestas = list(G.edges(no))
     return f"O nó {no} {'tem arestas conectadas: ' + str(arestas) if arestas else 'não tem arestas conectadas.'}"
+    
+
+@app.post("/grafo/algoritmo_hungaro_tabela", summary="Implementa o Algoritmo Húngaro em um grafo bipartido completo ponderado",
+          response_description="Emparelhamento mínimo de custo")
+async def algoritmo_hungaro(input_data: GraphInput):
+    try:
+        resultado = hungarian_algorithm(input_data.graph)
+        return f"{resultado}"
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/grafo/verificar_conexo", summary="Verifica se um grafo não orientado é conexo", response_description="Se o grafo é conexo")
+async def verificar_conexo(data: EdgeList):
+    if data.directed:
+        return "Não é possível fazer a verificação, pois o grafo é orientado."
+    
+    G = cria_grafo(orientado=False)
+    adicionar_arestas(G, data.edges)
+    adicionar_nos(G, data.nodes)
+    conexo = nx.is_connected(G)
+    
+    return f"O grafo {'é' if conexo else 'não é'} conexo."
 
 
 # Monta o diretório estático para servir o arquivo index.html

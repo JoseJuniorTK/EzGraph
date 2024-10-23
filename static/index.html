@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manipulação de Grafos</title>
+    <title>Lab de Grafos 0.1</title>
     <script src="//unpkg.com/3d-force-graph"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@1.18.11/dist/tsparticles.min.js"></script>
     <style>
         body { margin: 0; }
         .node-label {
@@ -37,19 +36,17 @@
             display: block;
             vertical-align: bottom;
         }
-        #tsparticles {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+                .highlight {
+            background-color: #000;
+        }
+        .highlight-column {
+            background-color: #FFFF00;
         }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-obsidian text-gray-300">
-    <!-- tsParticles container -->
-    <div id="tsparticles"></div>
     <header class="w-full p-4 bg-lava-black text-white text-center">
-        <h1 class="text-3xl font-bold">Ez Graph v0.1</h1>
+        <h1 class="text-3xl font-bold">Lab de Grafos v0.1</h1>
     </header>
     <div class="p-4 flex flex-col flex-grow">
         <div class="flex flex-row justify-around mb-4">
@@ -76,31 +73,32 @@
     </div>
 
     <div class="flex flex-1">
-        <div id="graphContainer" class="w-2/3 h-full rounded-md shadow-md sticky"></div>
-        <div id="verifications" class="w-1/4 h-full p-4 bg-lava-black rounded-md shadow-md overflow-auto">
+        <div id="graphContainer" class="w-2/3 h-full shadow-md sticky"></div>
+        <div id="verifications" class="w-1/4 h-full p-4 bg-lava-black shadow-md overflow-auto">
             <h2 class="text-2xl font-semibold mb-4 text-center">Verificações</h2>
             <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Verificar Existência de Aresta</h3>
                 <div class="flex flex-col items-center">
-                    <input type="number" id="u" placeholder="u" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <input type="number" id="v" placeholder="v" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraph('verificar_existencia_aresta', {u: parseInt(document.getElementById('u').value), v: parseInt(document.getElementById('v').value)}, 'existenciaArestaResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                    <input type="text" id="u" placeholder="u" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <input type="text" id="v" placeholder="v" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+<button type="button" onclick="window.verifyGraph('verificar_existencia_aresta', {u: document.getElementById('u').value.trim(), v: document.getElementById('v').value.trim()}, 'existenciaArestaResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+
                 </div>
                 <div id="existenciaArestaResult" class="text-center"></div>
             </div>
             <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Grau do Vértice</h3>
                 <div class="flex flex-col items-center">
-                    <input type="number" id="vertex" placeholder="vértice" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraph('grau_vertice', {v: parseInt(document.getElementById('vertex').value)}, 'grauVerticeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                    <input type="text" id="vertex" placeholder="vértice" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+<button type="button" onclick="window.verifyGraph('grau_vertice', {v: document.getElementById('vertex').value.trim()}, 'grauVerticeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
                 </div>
                 <div id="grauVerticeResult" class="text-center"></div>
             </div>
             <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Adjacência do Vértice</h3>
                 <div class="flex flex-col items-center">
-                    <input type="number" id="adj_vertex" placeholder="vértice" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraph('adjacencia_vertice', {v: parseInt(document.getElementById('adj_vertex').value)}, 'adjacenciaVerticeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                    <input type="text" id="adj_vertex" placeholder="vértice" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+<button type="button" onclick="window.verifyGraph('adjacencia_vertice', {v: document.getElementById('adj_vertex').value.trim()}, 'adjacenciaVerticeResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
                 </div>
                 <div id="adjacenciaVerticeResult" class="text-center"></div>
             </div>
@@ -111,6 +109,13 @@
                 </div>
                 <div id="ciclicidadeResult" class="text-center"></div>
             </div>
+<div class="mb-4">
+    <h3 class="text-lg font-semibold my-2 text-center">Verificar Conexo (Grafo Não Orientado)</h3>
+    <div class="flex flex-col items-center">
+        <button type="button" onclick="window.verifyGraph('verificar_conexo', {}, 'conexoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+    </div>
+    <div id="conexoResult" class="text-center"></div>
+</div>
             <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Componentes Fortemente Conexos</h3>
                 <div class="flex flex-col items-center">
@@ -136,7 +141,7 @@
                 <h3 class="text-lg font-semibold my-2 text-center">Conjunto Independente</h3>
                 <div class="flex flex-col items-center">
                     <input type="text" id="indep_set" placeholder="conjunto (separado por vírgula)" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraphWithConjunto('verificar_conjunto_independente', document.getElementById('indep_set').value.split(',').map(Number), 'independenteResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+<button type="button" onclick="window.verifyGraphWithConjunto('verificar_conjunto_independente', document.getElementById('indep_set').value, 'independenteResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
                 </div>
                 <div id="independenteResult" class="text-center"></div>
             </div>
@@ -144,7 +149,8 @@
                 <h3 class="text-lg font-semibold my-2 text-center">Clique</h3>
                 <div class="flex flex-col items-center">
                     <input type="text" id="clique_set" placeholder="conjunto (separado por vírgula)" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraphWithConjunto('verificar_clique', document.getElementById('clique_set').value.split(',').map(Number), 'cliqueResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+<button type="button" onclick="window.verifyGraphWithConjunto('verificar_clique', document.getElementById('clique_set').value, 'cliqueResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+
                 </div>
                 <div id="cliqueResult" class="text-center"></div>
             </div>
@@ -152,7 +158,8 @@
                 <h3 class="text-lg font-semibold my-2 text-center">Conjunto Dominante</h3>
                 <div class="flex flex-col items-center">
                     <input type="text" id="dom_set" placeholder="conjunto (separado por vírgula)" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraphWithConjunto('verificar_conjunto_dominante', document.getElementById('dom_set').value.split(',').map(Number), 'dominanteResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+<button type="button" onclick="window.verifyGraphWithConjunto('verificar_conjunto_dominante', document.getElementById('dom_set').value, 'dominanteResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+
                 </div>
                 <div id="dominanteResult" class="text-center"></div>
             </div>
@@ -166,17 +173,17 @@
             <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Caminho Mais Curto</h3>
                 <div class="flex flex-col items-center">
-                    <input type="number" id="source" placeholder="source" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <input type="number" id="target" placeholder="target" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraph('caminho_mais_curto', {source: parseInt(document.getElementById('source').value), target: parseInt(document.getElementById('target').value)}, 'caminhoCurtoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                    <input type="text" id="source" placeholder="source" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+                    <input type="text" id="target" placeholder="target" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+<button type="button" onclick="window.verifyGraph('caminho_mais_curto', {source: document.getElementById('source').value.trim(), target: document.getElementById('target').value.trim()}, 'caminhoCurtoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
                 </div>
                 <div id="caminhoCurtoResult" class="text-center"></div>
             </div>
             <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Verificar Arestas do Nó</h3>
                 <div class="flex flex-col items-center">
-                    <input type="number" id="no" placeholder="nó" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
-                    <button type="button" onclick="window.verifyGraph('verificar_arestas_do_no', {no: parseInt(document.getElementById('no').value)}, 'arestasNoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
+                    <input type="text" id="no" placeholder="nó" class="border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md mb-2 w-64">
+<button type="button" onclick="window.verifyGraph('verificar_arestas_do_no', {no: document.getElementById('no').value.trim()}, 'arestasNoResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
                 </div>
                 <div id="arestasNoResult" class="text-center"></div>
             </div>
@@ -187,7 +194,7 @@
                 </div>
                 <div id="arvoreGeradoraMinimaResult" class="text-center"></div>
             </div>
-            <div class="mb-4">
+                       <div class="mb-4">
                 <h3 class="text-lg font-semibold my-2 text-center">Algoritmo Húngaro</h3>
                 <div class="flex flex-col items-center">
                     <button type="button" onclick="window.verifyGraph('algoritmo_hungaro', {}, 'algoritmoHungaroResult')" class="bg-orange-500 text-white px-4 py-2 rounded-md w-24">Verificar</button>
@@ -197,6 +204,170 @@
             <div id="results" class="flex flex-col items-center justify-center text-center"></div>
         </div>
     </div>
+    
+    <div class="flex flex-col items-center justify-center bg-lava-black text-gray-300 p-4" id="algoritmo-hungaro-section">
+    <h2 class="text-2xl font-bold my-2">Algoritmo Húngaro (Matriz de Custos)</h2>
+
+    <!-- Table initially hidden -->
+    <table id="hungarianTable" class="table-auto border border-gray-700 bg-obsidian text-gray-300 mb-4 hidden">
+        <tbody>
+        </tbody>
+    </table>
+
+    <!-- Buttons for adding rows, columns, and clearing the table -->
+    <div class="flex flex-row justify-center gap-2 mb-4">
+        <button id="addRow" class="bg-orange-500 text-white px-4 py-2 rounded-md">Adicionar Linha</button>
+        <button id="addColumn" class="bg-orange-500 text-white px-4 py-2 rounded-md">Adicionar Coluna</button>
+        <button id="clearTable" class="bg-red-500 text-white px-4 py-2 rounded-md hidden">Limpar</button>
+    </div>
+
+    <!-- Submit button initially hidden -->
+    <button id="enviarButton" class="bg-orange-500 text-white px-4 py-2 rounded-md hidden">Enviar</button>
+</div>
+
+<script>
+    const hungarianTable = document.getElementById('hungarianTable').querySelector('tbody');
+    const addRowButton = document.getElementById('addRow');
+    const addColumnButton = document.getElementById('addColumn');
+    const clearTableButton = document.getElementById('clearTable');
+    const enviarButton = document.getElementById('enviarButton');
+
+    // Function to show the table and the "Enviar" button when first clicked
+    function showTable() {
+        document.getElementById('hungarianTable').classList.remove('hidden');
+        enviarButton.classList.remove('hidden');
+        clearTableButton.classList.remove('hidden');
+    }
+
+    // Add a new row to the table
+    addRowButton.addEventListener('click', () => {
+        if (hungarianTable.rows.length === 0) {
+            const row = document.createElement('tr');
+            const initialCell = document.createElement('td');
+            initialCell.innerHTML = '<input type="number" placeholder="Value" class="bg-gray-700 text-gray-300 p-2 border border-gray-500">';
+            row.appendChild(initialCell);
+            hungarianTable.appendChild(row);
+            showTable();
+        } else {
+            const row = document.createElement('tr');
+            const columnCount = hungarianTable.rows[0].cells.length;
+            for (let i = 0; i < columnCount; i++) {
+                const cell = document.createElement('td');
+                cell.innerHTML = '<input type="number" placeholder="Value" class="bg-gray-700 text-gray-300 p-2 border border-gray-500">';
+                row.appendChild(cell);
+            }
+            hungarianTable.appendChild(row);
+        }
+    });
+
+    // Add a new column to each row
+    addColumnButton.addEventListener('click', () => {
+        if (hungarianTable.rows.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.innerHTML = '<input type="number" placeholder="Value" class="bg-gray-700 text-gray-300 p-2 border border-gray-500">';
+            row.appendChild(cell);
+            hungarianTable.appendChild(row);
+            showTable();
+        } else {
+            for (const row of hungarianTable.rows) {
+                const cell = document.createElement('td');
+                cell.innerHTML = '<input type="number" placeholder="Value" class="bg-gray-700 text-gray-300 p-2 border border-gray-500">';
+                row.appendChild(cell);
+            }
+        }
+    });
+
+    // Handle "Enviar" button click
+    enviarButton.addEventListener('click', () => {
+        const graphData = { graph: {} }; // Create the outer "graph" key object
+        
+        // Loop through each row
+        for (let i = 0; i < hungarianTable.rows.length; i++) {
+            const row = hungarianTable.rows[i];
+            const rowData = {};
+            
+            // Loop through each cell (column) in the row
+            for (let j = 0; j < row.cells.length; j++) {
+                const value = row.cells[j].querySelector('input').value;
+                rowData[`#COLUMN_${j + 1}`] = value ? parseFloat(value) : 0;
+            }
+            
+            graphData.graph[`ROW_${i + 1}`] = rowData; // Assign the row data to the corresponding row key inside "graph"
+        }
+        
+        // Log the final graph data
+        console.log('Graph data submitted:', JSON.stringify(graphData, null, 2));
+        
+        // Example POST request (replace 'your-server-url' with your actual URL)
+        fetch('https://katudv.com/p/ezgraph/grafo/algoritmo_hungaro_tabela', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(graphData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            highlightTable(data); // Call to highlight the table based on the response
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+
+    // Highlight the table based on the server's response
+function highlightTable(response) {
+    // Manually parse the response string to convert it to a valid format for JavaScript
+    const formattedResponse = response
+        .replace(/\(/g, '[') // Replace parentheses with square brackets
+        .replace(/\)/g, ']') // Close the square brackets
+        .replace(/'/g, '"'); // Replace single quotes with double quotes
+    
+    try {
+        // Parse the formatted string as a valid JSON array
+        const parsedResponse = JSON.parse(formattedResponse);
+
+        // First, remove any existing highlights
+        Array.from(hungarianTable.getElementsByTagName('td')).forEach(cell => {
+            cell.classList.remove('highlight', 'highlight-column');
+        });
+
+        // Loop through the parsed response and highlight the matching cells
+        parsedResponse.forEach(([rowColumnPair, value]) => {
+            const [rowId, columnId] = rowColumnPair;
+            const rowIndex = parseInt(rowId.split('_')[1]) - 1; // Get row index (zero-based)
+            const columnIndex = parseInt(columnId.split('_')[1]) - 1; // Get column index (zero-based)
+
+            const row = hungarianTable.rows[rowIndex];
+            if (row) {
+                // Highlight the entire row
+                for (let cell of row.cells) {
+                    cell.classList.add('highlight');
+                }
+                // Highlight the specific column in that row
+                if (row.cells[columnIndex]) {
+                    row.cells[columnIndex].classList.add('highlight-column');
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error parsing response:', error);
+    }
+}
+
+
+    // Clear the table and hide everything
+    clearTableButton.addEventListener('click', () => {
+        hungarianTable.innerHTML = '';  // Clear the table content
+        document.getElementById('hungarianTable').classList.add('hidden');
+        enviarButton.classList.add('hidden');
+        clearTableButton.classList.add('hidden');
+    });
+</script>
+
+    
     <footer class="w-full p-4 bg-lava-black text-white flex items-center justify-center">
         <img src="https://ascom.ufpa.br/images/Brasao/brasao-UFPA-branco.png" alt="Brasão UFPA" class="h-12 mr-4">
         <p class="text-sm">Feito por <b>José Maria Junior Lopes Perdigão</b> para o trabalho final da disciplina <b>Grafos</b> ministrada por <b>Nelson Cruz Sampaio Neto</b> em <b>2024</b></p>
@@ -208,25 +379,26 @@
     import { CSS2DRenderer, CSS2DObject } from '/p/ezgraph/jsm/CSS2DRenderer.js';
     import { UnrealBloomPass } from 'https://unpkg.com/three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-    window.addEdge = function addEdge(u = '', v = '', w = '') {
-        const edgeList = document.getElementById('edgeList');
-        const newEdge = document.createElement('div');
-        newEdge.classList.add('edge', 'flex', 'items-center', 'mb-2');
-        newEdge.innerHTML = `
-            <input type="number" class="vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="u" value="${u}" required min="0"> -
-            <input type="number" class="vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="v" value="${v}" required min="0">
-            <input type="number" class="weight border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="peso" value="${w}" min="0">
-            <button type="button" onclick="removeEdge(this)" class="bg-orange-500 text-white px-2 py-1 rounded-md ml-2">-</button>
-        `;
-        edgeList.appendChild(newEdge);
-    }
+        window.addEdge = function addEdge(u = '', v = '', w = '') {
+            const edgeList = document.getElementById('edgeList');
+            const newEdge = document.createElement('div');
+            newEdge.classList.add('edge', 'flex', 'items-center', 'mb-2');
+            newEdge.innerHTML = `
+                <input type="text" class="vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="u" value="${u}" required min="0"> -
+                <input type="text" class="vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="v" value="${v}" required min="0">
+                <input type="number" class="weight border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="peso" value="${w}" min="0">
+                <button type="button" onclick="removeEdge(this)" class="bg-orange-500 text-white px-2 py-1 rounded-md ml-2">-</button>
+            `;
+            edgeList.appendChild(newEdge);
+            document.getElementById('edgeListContainer').classList.remove('hidden');
+        }
 
     window.addNode = function addNode(node = '') {
         const nodeList = document.getElementById('nodeList');
         const newNode = document.createElement('div');
         newNode.classList.add('node', 'flex', 'items-center', 'mb-2');
         newNode.innerHTML = `
-            <input type="number" class="node-vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="nó" value="${node}" required min="0">
+            <input type="text" class="node-vertex border border-gray-700 bg-obsidian text-gray-300 px-2 py-1 rounded-md" placeholder="nó" value="${node}" required min="0">
             <button type="button" onclick="removeNode(this)" class="bg-orange-500 text-white px-2 py-1 rounded-md ml-2">-</button>
         `;
         nodeList.appendChild(newNode);
@@ -240,24 +412,25 @@
         button.parentElement.remove();
     }
 
-    window.validateGraphData = function validateGraphData() {
-        let isValid = true;
-        document.querySelectorAll('.edge').forEach(edge => {
-            const vertices = edge.querySelectorAll('.vertex');
-            const u = vertices[0].value;
-            const v = vertices[1].value;
-            if (u === '' || v === '' || isNaN(u) || isNaN(v) || u < 0 || v < 0) {
-                isValid = false;
-            }
-        });
-        document.querySelectorAll('.node-vertex').forEach(node => {
-            const n = node.value;
-            if (n === '' || isNaN(n) || n < 0) {
-                isValid = false;
-            }
-        });
-        return isValid;
-    }
+        window.validateGraphData = function validateGraphData() {
+    let isValid = true;
+    document.querySelectorAll('.edge').forEach(edge => {
+        const vertices = edge.querySelectorAll('.vertex');
+        const u = vertices[0].value.trim();
+        const v = vertices[1].value.trim();
+        if (u === '' || v === '') {
+            isValid = false;
+        }
+    });
+    document.querySelectorAll('.node-vertex').forEach(node => {
+        const n = node.value.trim();
+        if (n === '') {
+            isValid = false;
+        }
+    });
+    return isValid;
+}
+
 
     window.checkDuplicateNodes = function checkDuplicateNodes(edges, nodes) {
         const edgeNodes = new Set();
@@ -268,43 +441,45 @@
         return nodes.some(node => edgeNodes.has(node));
     }
 
-    window.saveGraph = function saveGraph() {
-        if (!validateGraphData()) {
-            alert('Por favor, insira valores válidos para todas as arestas e nós.');
-            return;
-        }
-        const edges = [];
-        document.querySelectorAll('.edge').forEach(edge => {
-            const vertices = edge.querySelectorAll('.vertex');
-            const weight = edge.querySelector('.weight').value;
-            const u = parseInt(vertices[0].value);
-            const v = parseInt(vertices[1].value);
-            if (!isNaN(u) && !isNaN(v)) {
-                edges.push([u, v, weight ? parseFloat(weight) : 1]);
-            }
-        });
-        const nodes = [];
-        document.querySelectorAll('.node-vertex').forEach(node => {
-            const n = parseInt(node.value);
-            if (!isNaN(n)) {
-                nodes.push(n);
-            }
-        });
-
-        if (checkDuplicateNodes(edges, nodes)) {
-            alert('Erro: Nós isolados não podem ser os mesmos que os nós definidos nas arestas.');
-            return;
-        }
-
-        const directed = document.getElementById('directed').checked;
-        const graphData = {
-            edges: edges,
-            nodes: nodes,
-            directed: directed
-        };
-        document.cookie = `graphData=${JSON.stringify(graphData)};path=/`;
-        renderGraph(graphData);
+window.saveGraph = function saveGraph() {
+    if (!validateGraphData()) {
+        alert('Por favor, insira valores válidos para todas as arestas e nós.');
+        return;
     }
+    const edges = [];
+    document.querySelectorAll('.edge').forEach(edge => {
+        const vertices = edge.querySelectorAll('.vertex');
+        const weight = edge.querySelector('.weight').value;
+        const u = vertices[0].value.trim(); // No longer parsed as an integer
+        const v = vertices[1].value.trim(); // No longer parsed as an integer
+        if (u && v) {
+            edges.push([u, v, weight ? parseFloat(weight) : 1]);
+        }
+    });
+
+    const nodes = [];
+    document.querySelectorAll('.node-vertex').forEach(node => {
+        const n = node.value.trim(); // No longer parsed as an integer
+        if (n) {
+            nodes.push(n);
+        }
+    });
+
+    if (checkDuplicateNodes(edges, nodes)) {
+        alert('Erro: Nós isolados não podem ser os mesmos que os nós definidos nas arestas.');
+        return;
+    }
+
+    const directed = document.getElementById('directed').checked;
+    const graphData = {
+        edges: edges,
+        nodes: nodes,
+        directed: directed
+    };
+    document.cookie = `graphData=${JSON.stringify(graphData)};path=/`;
+    renderGraph(graphData);
+}
+
 
     window.clearGraph = function clearGraph() {
         document.cookie = 'graphData=;path=/;expires=Thu, 01 Jan 1970 00:00:00 UTC;';
@@ -387,175 +562,97 @@
         });
     }
 
-    window.verifyGraph = function verifyGraph(endpoint, queryParams, resultElementId) {
-        const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
-        if (graphDataCookie) {
-            const graphData = JSON.parse(graphDataCookie.split('=')[1]);
+window.verifyGraph = function verifyGraph(endpoint, queryParams, resultElementId) {
+    const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
+    if (graphDataCookie) {
+        const graphData = JSON.parse(graphDataCookie.split('=')[1]);
 
-            // Inclui os parâmetros do queryParams na URL e os dados do grafo no corpo da requisição
-            const urlParams = new URLSearchParams(queryParams).toString();
-            const url = `https://katudv.com/p/ezgraph/grafo/${endpoint}?${urlParams}`;
+        // Inclui os parâmetros do queryParams na URL e os dados do grafo no corpo da requisição
+        const urlParams = new URLSearchParams(queryParams).toString();
+        const url = `https://katudv.com/p/ezgraph/grafo/${endpoint}?${urlParams}`;
 
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(graphData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                const resultElement = document.getElementById(resultElementId);
-                resultElement.innerHTML = `<p class="text-center">${JSON.stringify(data)}</p>`;
-            })
-            .catch(error => {
-                const resultElement = document.getElementById(resultElementId);
-                resultElement.innerHTML = `<p class="text-center">Erro: ${error}</p>`;
-                console.error(`Erro ao verificar ${endpoint}:`, error);
-            });
-        } else {
-            alert('Nenhum grafo encontrado nos cookies. Por favor, salve um grafo primeiro.');
-        }
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(graphData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultElement = document.getElementById(resultElementId);
+
+            // Se for um objeto ou array, você ainda pode usar JSON.stringify, caso contrário exibe texto puro
+            if (typeof data === 'object') {
+                resultElement.innerHTML = `<p class="text-center">${JSON.stringify(data, null, 2)}</p>`;
+            } else {
+                resultElement.innerHTML = `<p class="text-center">${data}</p>`;  // Exibe como texto simples
+            }
+        })
+        .catch(error => {
+            const resultElement = document.getElementById(resultElementId);
+            resultElement.innerHTML = `<p class="text-center">Erro: ${error}</p>`;
+            console.error(`Erro ao verificar ${endpoint}:`, error);
+        });
+    } else {
+        alert('Nenhum grafo encontrado nos cookies. Por favor, salve um grafo primeiro.');
+    }
+}
+
+
+window.verifyGraphWithConjunto = function verifyGraphWithConjunto(endpoint, conjuntoInput, resultElementId) {
+    // Ensure conjuntoInput is treated as a string
+    if (typeof conjuntoInput !== 'string') {
+        console.error('Expected conjuntoInput to be a string, but received:', conjuntoInput);
+        return;
     }
 
-    window.verifyGraphWithConjunto = function verifyGraphWithConjunto(endpoint, conjunto, resultElementId) {
-        const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
-        if (graphDataCookie) {
-            const graphData = JSON.parse(graphDataCookie.split('=')[1]);
+    const graphDataCookie = document.cookie.split('; ').find(row => row.startsWith('graphData='));
+    if (graphDataCookie) {
+        const graphData = JSON.parse(graphDataCookie.split('=')[1]);
 
-            const bodyData = {
-                data: graphData,
-                conjunto: conjunto
-            };
+        // Split input and make sure it's an array of strings
+        const conjunto = conjuntoInput.split(',').map(item => item.trim());  // Ensure it's an array of strings
 
-            fetch(`https://katudv.com/p/ezgraph/grafo/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(bodyData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                const resultElement = document.getElementById(resultElementId);
-                resultElement.innerHTML = `<p class="text-center">${JSON.stringify(data)}</p>`;
-            })
-            .catch(error => {
-                const resultElement = document.getElementById(resultElementId);
-                resultElement.innerHTML = `<p class="text-center">Erro: ${error}</p>`;
-                console.error(`Erro ao verificar ${endpoint}:`, error);
-            });
-        } else {
-            alert('Nenhum grafo encontrado nos cookies. Por favor, salve um grafo primeiro.');
-        }
+        const bodyData = {
+            data: graphData,
+            conjunto: conjunto  // Pass the conjunto as an array of strings
+        };
+
+        fetch(`https://katudv.com/p/ezgraph/grafo/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bodyData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultElement = document.getElementById(resultElementId);
+
+            // Check if data is an object or plain string
+            if (typeof data === 'object' && data.mensagem) {
+                // Display only the message in plain text
+                resultElement.innerHTML = `<p class="text-center">${data.mensagem}</p>`;
+            } else {
+                resultElement.innerHTML = `<p class="text-center">${data}</p>`;
+            }
+        })
+        .catch(error => {
+            const resultElement = document.getElementById(resultElementId);
+            resultElement.innerHTML = `<p class="text-center">Erro: ${error}</p>`;
+            console.error(`Erro ao verificar ${endpoint}:`, error);
+        });
+    } else {
+        alert('Nenhum grafo encontrado nos cookies. Por favor, salve um grafo primeiro.');
     }
+}
+
+
 
     // Carrega os dados do grafo dos cookies ao carregar a página
     window.onload = loadGraph;
 
-    // Inicializa tsParticles
-    tsParticles.load("tsparticles", {
-        fpsLimit: 60,
-        particles: {
-            number: {
-                value: 0,
-                density: {
-                    enable: true,
-                    value_area: 800
-                }
-            },
-            color: {
-                value: "#ed8936",
-                animation: {
-                    enable: true,
-                    speed: -70,
-                    sync: true
-                }
-            },
-            shape: {
-                type: "circle"
-            },
-            opacity: {
-                value: 0.3,
-                random: false,
-                animation: {
-                    enable: true,
-                    speed: 0.5,
-                    minimumValue: 0,
-                    sync: false
-                }
-            },
-            size: {
-                value: 8,
-                random: { enable: true, minimumValue: 4 },
-                animation: {
-                    enable: false,
-                    speed: 20,
-                    minimumValue: 4,
-                    sync: false
-                }
-            },
-            life: {
-                duration: {
-                    value: 4.2
-                },
-                count: 1
-            },
-            move: {
-                angle: {
-                    value: 45,
-                    offset: 0
-                },
-                enable: true,
-                gravity: {
-                    enable: true,
-                    acceleration: -0.5
-                },
-                speed: 2,
-                direction: "top",
-                random: false,
-                straight: false,
-                size: true,
-                outModes: {
-                    default: "destroy",
-                    bottom: "none"
-                },
-                attract: {
-                    enable: false,
-                    distance: 300,
-                    rotate: {
-                        x: 600,
-                        y: 1200
-                    }
-                }
-            }
-        },
-        interactivity: {
-            detectsOn: "canvas",
-            events: {
-                resize: true
-            }
-        },
-        detectRetina: true,
-        background: {
-            color: "#000000"
-        },
-        emitters: {
-            direction: "top",
-            rate: {
-                quantity: 1,
-                delay: 0.01
-            },
-            size: {
-                width: 100,
-                height: 10
-            },
-            position: {
-                x: 50,
-                y: 100
-            }
-        }
-    });
 
     // Ajustar o tamanho do gráfico ao redimensionar a janela
     window.addEventListener('resize', () => {
